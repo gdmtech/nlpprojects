@@ -11,14 +11,13 @@ from collections import Counter
 # most commmon punctuation in English
 from string import punctuation
 
+#endpoint TEXT SUMMARY
+#summarise using sentences with high frequency words (normalised)
 
 # load the spacy language model into memory (the model must be installed by pip)
 print('load the spacy language model into memory (the model must be installed by pip)')
 nlp = spacy.load("en_core_web_lg")
 print('en_core_web_lg installed')
-
-# unsupervised : topic modelling (keyword analysis)
-
 
 def text_summary(text, limit):
     keyword = []
@@ -69,8 +68,13 @@ def text_summary(text, limit):
 
     return ' '.join(summary)
 
-
+#open the txt file for analysis
+text=file.open()
 print(text_summary('Riding the momentum and to capture the market’s imagination, she went on to showcase her creations at Malaysia Fashion Week in 2014, MICAM Shanghai, Mercedes-Benz STYLO Fashion Grand Prix, the closing winners’ party of the inaugural Kuala Lumpur City Grand Prix, the global launch of Malaysia Fashion Week in Paris, Malaysia Fashion WeeK in Kuala Lumpur and Taipei in Style in 2015 to much success. She also awarded the protégé award from Merceds-Benz STYLO Fashion award.  In May 2017, she has also showed the creations at Mercedes-Benz Stylo AsiaFashionFestival and be awarded the most promising designer of the year 2017.  In April 2018, She showed her 2018AW collection at Penang Fashion Week2018 and work with Nickeledeon’s Sponge Bob Gold. In November, She showed her 2019 SS collection at Malaysia Fashion Week 2018 and was awarded the Malaysia Fashion Week Best Accessories Designer of the Year 2018', 4))
+
+
+
+
 # supervised : document classication
 
 # unsupervised : synonym creator (keyword analysis)
