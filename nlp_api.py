@@ -98,7 +98,7 @@ def mojo_text_parse(text):
     nlp.add_pipe('sentencizer')
     print('Pipelines', nlp.pipe_names)
 
-    # list all the sentences in the text
+    # list all the sentences in the text - sentenzier has already parsed the text to doc.sents
     for sent in doc.sents:
         sents.append(sent.text)
     print(sents)
@@ -106,7 +106,7 @@ def mojo_text_parse(text):
     print('remove stop words and classify text')
     for word in doc:
         # is_stop is a spacy function
-        if word.is_stop == False:
+        if word.is_stop == False or word.pos_ != 'PUNCT':
             filtered.append(word)
             # word,pos_ classifies the Part Of Speech (POS) of the text, word.lemma_ lists the related workds
             print(word.text, word.pos_)
@@ -117,8 +117,8 @@ def mojo_text_parse(text):
     # create a 3 part tuple using a for loop of attricutes of each entiy in the text
     entities = [(i, i.label_, i.label) for i in doc.ents]
     print('Entities', entities)
-    # use the spacy renderer to serve a web page of the ENTITIES in the text
-    spacy.displacy.serve(doc, style="ent")
+    # use the spacy renderer to serve a web page of the DEPENDENCIES in the text
+    spacy.displacy.serve(doc, style="dep")
 
 
 def spacystopwords(limit):
@@ -141,6 +141,8 @@ text = text_file.read()
 print(text)
 print(mojo_text_summary(text, 10))
 print('2. Text Parsing : words, lemmas, entities')
-text = 'How about running a trip to Tokyo?  Dont be shy.  Or perhaps Kyoto or London. Nevertheless, challenges await you if you run it.  An the Financial Times will be interested.  Soon!'
+#text = 'How about running a trip to Tokyo?  Dont be shy.  Or perhaps Kyoto or London. Nevertheless, challenges await you if you run it.  An the Financial Times will be interested.  Soon!'
 print(text)
 print(mojo_text_parse(text))
+print('3. Supervised Learning on Text using text_cat')
+# https://www.machinelearningplus.com/nlp/custom-text-classification-spacy/
