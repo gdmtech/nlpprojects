@@ -127,25 +127,26 @@ def text_classifier():
 
     # textcat single label and multi-label
     # create and add the textcat pipeline with a CNN classifier acrchitecture
-    #config = {"exclusive_classes": True, "architecture": "simple_cnn"}
-    #nlp.add_pipe("textcat", config=config)
-    # check the pip is setup correctly
+    print(nlp.pipe_names)
+    config = {"threshold": 0.5,"model": "spacy.TextCatCNN.v2"}
+    nlp.add_pipe("textcat", config=config)
+    print(nlp.pipe_names)
     print('setup the classes')
-    # nlp.pipe_names
+    
     # Adding the class labels sequentially to textcat with add_lebel method
     # textcat.add_label("POSITIVE")
     # textcat.add_label("NEGATIVE")
     print('import the data')
-    # load the labelled data to train the model
+    # load the labelled data to train the model 
     # the data must have postive or negatiev retains as output
     reviews = pd.read_csv("databases/reviews.csv")
     #df_amazon = pd.read_csv ("datasets/amazon_alexa.tsv", sep="\t")
     # we are only interested in  REview text and Recommend IND; drop columns with missing balues
-    reviews = reviews[['Review Text', 'Recommended IND']].dropna()
+    reviews = reviews[['Review Text', 'Review Index']].dropna()
     print(reviews.head(10))
     # apply the lamda function to each row ie make a tuple; apply by rows (axis=1)
     reviews['tuples'] = reviews.apply(lambda row: (
-        row['Review Text'], row['Recommended IND']), axis=1)
+        row['Review Text'], row['Review Index']), axis=1)
     # convert to a list for training
     train = reviews['tuples'].tolist()
     print(train[:10])
@@ -176,9 +177,9 @@ text = text_file.read()
 print(text)
 #print(mojo_text_summary(text, 10))
 print('2. Text Parsing : words, lemmas, entities')
-#text = 'How about running a trip to Tokyo?  Dont be shy.  Or perhaps Kyoto or London. Nevertheless, challenges await you if you run it.  An the Financial Times will be interested.  Soon!'
+text = 'How about running a trip to Tokyo?  Dont be shy.  Or perhaps Kyoto or London. Nevertheless, challenges await you if you run it.  An the Financial Times will be interested.  Soon!'
 print(text)
-# print(mojo_text_parse(text))
+#print(mojo_text_parse(text))
 print('3. Supervised Learning on Text using text_cat')
 # https://www.machinelearningplus.com/nlp/custom-text-classification-spacy/
 text_classifier()
