@@ -5,6 +5,8 @@
 # advanced natural language processing, written in the
 # programming languages Python and Cython.
 
+# explosion AI spacy 3.0 contains many new features
+from ml_datasets import imdb
 import spacy
 # count frequency
 from collections import Counter
@@ -13,12 +15,21 @@ from string import punctuation
 # we need pandas to manipulate text input
 import pandas as pd
 
+# import a progress bar - https://tqdm.github.io/
+from tqdm.auto import tqdm
+
+# DocBin is spacys new way to store Docs in a
+# binary format for training later
+from spacy.tokens import DocBin
+
 # endpoint TEXT SUMMARY
 # summarise using sentences with high frequency words (normalised)
 
-# load the spacy language model into memory (the model must be installed by pip)
+# load the spacy language model into memory (the model must be installed by pip as its large)
+# the nlp contains parsing pipelines - check with v
 print('load the spacy language model into memory (the model must be installed by pip)')
 nlp = spacy.load("en_core_web_lg")
+print('pipelines', nlp.pipe_names)
 print('en_core_web_lg installed')
 
 
@@ -128,16 +139,17 @@ def text_classifier():
     # textcat single label and multi-label
     # create and add the textcat pipeline with a CNN classifier acrchitecture
     print(nlp.pipe_names)
-    config = {"threshold": 0.5,"model": "spacy.TextCatCNN.v2"}
+    config = {"threshold": 0.5, "model": "spacy.TextCatCNN.v2"}
+
     nlp.add_pipe("textcat", config=config)
     print(nlp.pipe_names)
     print('setup the classes')
-    
+
     # Adding the class labels sequentially to textcat with add_lebel method
     # textcat.add_label("POSITIVE")
     # textcat.add_label("NEGATIVE")
     print('import the data')
-    # load the labelled data to train the model 
+    # load the labelled data to train the model
     # the data must have postive or negatiev retains as output
     reviews = pd.read_csv("databases/reviews.csv")
     #df_amazon = pd.read_csv ("datasets/amazon_alexa.tsv", sep="\t")
@@ -162,6 +174,83 @@ def spacystopwords(limit):
     print('First stop words:', list(spacy_stopwords)[:limit])
 
 
+def text_classifier_s3():
+    # https://medium.com/analytics-vidhya/building-a-text-classifier-with-spacy-3-0-dd16e9979a
+    # We want to classify movie reviews as positive or negative
+    # http://ai.stanford.edu/~amaas/data/sentiment/
+
+    # we already imported IMPD
+    # load movie reviews as a tuple (text, label) - the database is already configured for training
+    train_data, valid_data = imdb()
+    print('train_data', train_data)
+    print('valid_data', valid_data)
+    num_texts = 5000
+    # first we need to transform all the training data into annoated docs using the nlp model
+    train_docs = make_docs(train_data[:num_texts])
+    # then we save it in a binary file to disc using the DocBin compression (similar to pickle)
+    doc_bin = DocBin(docs=train_docs)
+    doc_bin.to_disk("./data/train.spacy")
+    # repeat for validation data
+    valid_docs = make_docs(valid_data[:num_texts])
+    doc_bin = DocBin(docs=valid_docs)
+    doc_bin.to_disk("./data/valid.spacy")
+    # the files are now ready to be used in Spacy traing
+
+
+def deployed_textcat(model_file):
+    # load thebest model from training
+    nlp = spacy.load(model_file)
+    text = ""
+    print("type : ‘quit’ to exit")
+    # predict the sentiment until someone writes quit
+    while text != "quit":
+        text = input("Please enter example input: ")
+        doc = nlp(text)
+        if doc.cats['positive'] > .5:
+            print("the sentiment is positive")
+        else:
+            print("the sentiment is negative")
+
+
+def make_docs(data):
+    """
+    this will take a list of texts and labels 
+    and transform them in spacy documents
+
+    data: list(tuple(text, label))
+
+    returns: List(spacy.Doc.doc)
+    """
+
+    docs = []
+    # nlp.pipe([texts]) is way faster than running
+    # nlp(text) for each text
+    # as_tuples allows us to pass in a tuple,
+    # the first one is treated as text
+    # the second one will get returned as it is.
+    # display as progress bar
+    # generate annotated data from the the nlp model
+    for doc, label in tqdm(nlp.pipe(data, as_tuples=True), total=len(data)):
+        # we need to set the (text)cat(egory) for each document
+        print('doc.cats >', label)
+        #cats = [{"POSITIVE": bool(y), "NEGATIVE": not bool(y)} for y in labels]
+        # cats need consistent names
+        if label == 'pos':
+            doc.cats["POSITIVE"] = label
+            doc.cats["NEGATIVE"] = False
+        else:
+            doc.cats["POSITIVE"] = False
+            doc.cats["NEGATIVE"] = label
+        # put them into a nice list
+        docs.append(doc)
+    return docs
+
+    # we are so far only interested in the first 5000 reviews
+    # this will keep the training time short.
+    # In practice take as much data as you can get.
+    # you can always reduce it to make the   script even faster.
+
+
 # open the txt file for analysis
 print('COGNIAI NLP DEMO')
 print('Examining word vectors - "castle"')
@@ -179,7 +268,8 @@ print(text)
 print('2. Text Parsing : words, lemmas, entities')
 text = 'How about running a trip to Tokyo?  Dont be shy.  Or perhaps Kyoto or London. Nevertheless, challenges await you if you run it.  An the Financial Times will be interested.  Soon!'
 print(text)
-#print(mojo_text_parse(text))
-print('3. Supervised Learning on Text using text_cat')
+# print(mojo_text_parse(text))
+print('3. Supervised Learning on Text using a text_cat model in spacy3 + binary data import')
 # https://www.machinelearningplus.com/nlp/custom-text-classification-spacy/
-text_classifier()
+text_classifier_s3()
+deployed_textcat("./models/best-")
