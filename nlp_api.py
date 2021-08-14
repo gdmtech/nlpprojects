@@ -6,6 +6,10 @@
 # programming languages Python and Cython.
 
 # explosion AI spacy 3.0 contains many new features
+
+#Depedencies
+#ml_datasets
+
 from ml_datasets import imdb
 import spacy
 # count frequency
@@ -184,13 +188,15 @@ def text_classifier_s3():
     train_data, valid_data = imdb()
     print('train_data', train_data)
     print('valid_data', valid_data)
-    num_texts = 5000
+    num_texts = 100
     # first we need to transform all the training data into annoated docs using the nlp model
+    print('create the spacy docbin for training')
     train_docs = make_docs(train_data[:num_texts])
     # then we save it in a binary file to disc using the DocBin compression (similar to pickle)
     doc_bin = DocBin(docs=train_docs)
     doc_bin.to_disk("./data/train.spacy")
     # repeat for validation data
+    print('create the spacy docbin for validation')
     valid_docs = make_docs(valid_data[:num_texts])
     doc_bin = DocBin(docs=valid_docs)
     doc_bin.to_disk("./data/valid.spacy")
@@ -232,15 +238,16 @@ def make_docs(data):
     # generate annotated data from the the nlp model
     for doc, label in tqdm(nlp.pipe(data, as_tuples=True), total=len(data)):
         # we need to set the (text)cat(egory) for each document
-        print('doc.cats >', label)
+        #print('doc.cats >', label)
         #cats = [{"POSITIVE": bool(y), "NEGATIVE": not bool(y)} for y in labels]
+        #doc.cats = {'postive':bool, 'negative':bool}
         # cats need consistent names
         if label == 'pos':
-            doc.cats["POSITIVE"] = label
-            doc.cats["NEGATIVE"] = False
+            doc.cats["positive"] = 1
+            doc.cats["negative"] = 0
         else:
-            doc.cats["POSITIVE"] = False
-            doc.cats["NEGATIVE"] = label
+            doc.cats["positive"] = 0
+            doc.cats["negative"] = 1
         # put them into a nice list
         docs.append(doc)
     return docs
