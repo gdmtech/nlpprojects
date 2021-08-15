@@ -7,8 +7,8 @@
 
 # explosion AI spacy 3.0 contains many new features
 
-#Depedencies
-#ml_datasets
+# Depedencies
+# ml_datasets
 
 from ml_datasets import imdb
 import spacy
@@ -276,7 +276,12 @@ print('2. Text Parsing : words, lemmas, entities')
 text = 'How about running a trip to Tokyo?  Dont be shy.  Or perhaps Kyoto or London. Nevertheless, challenges await you if you run it.  An the Financial Times will be interested.  Soon!'
 print(text)
 # print(mojo_text_parse(text))
-print('3. Supervised Learning on Text using a text_cat model in spacy3 + binary data import')
+print('3. Binary Text Classification (Sentiment Analysis) using new spacy3 text_cat model + binary data import + quickstart config')
 # https://www.machinelearningplus.com/nlp/custom-text-classification-spacy/
-text_classifier_s3()
-deployed_textcat("./models/best-")
+# text_classifier_s3()
+deployed_textcat("./output/model-best")
+print('4. Topic Modelling using spacy3 and gensim - NER')
+# https://towardsdatascience.com/building-a-topic-modeling-pipeline-with-spacy-and-gensim-c5dc03ffc619
+# https://alvinntnu.github.io/NTNU_ENC2045_LECTURES/nlp/topic-modeling-naive.html
+
+print('5. Multi category Text Classification using spacy3 and gensim')
