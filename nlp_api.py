@@ -280,8 +280,13 @@ print('3. Binary Text Classification (Sentiment Analysis) using new spacy3 text_
 # https://www.machinelearningplus.com/nlp/custom-text-classification-spacy/
 # text_classifier_s3()
 deployed_textcat("./output/model-best")
-print('4. Topic Modelling using spacy3 and gensim - NER')
+print('4. Topic Modelling using spacy3 and scikitlearn ")
+
+# - LDA "each document is made up of a distribution of topics and that each topic is in turn made up of a distribution of words.
+# The hidden or 'latent' layer - the topic layer" - what is it 'about'
 # https://towardsdatascience.com/building-a-topic-modeling-pipeline-with-spacy-and-gensim-c5dc03ffc619
 # https://alvinntnu.github.io/NTNU_ENC2045_LECTURES/nlp/topic-modeling-naive.html
+# https://www.kaggle.com/thebrownviking20/topic-modelling-with-spacy-and-scikit-learn
+
 
 print('5. Multi category Text Classification using spacy3 and gensim')
