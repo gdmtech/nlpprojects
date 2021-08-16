@@ -26,6 +26,10 @@ from tqdm.auto import tqdm
 # binary format for training later
 from spacy.tokens import DocBin
 
+from sklearn.model_selection import GridSearchCV
+from sklearn.decomposition import LatentDirichletAllocation
+from sklearn.manifold import TSNE
+
 # endpoint TEXT SUMMARY
 # summarise using sentences with high frequency words (normalised)
 
@@ -257,6 +261,26 @@ def make_docs(data):
     # In practice take as much data as you can get.
     # you can always reduce it to make the   script even faster.
 
+def topic_model(text):
+    # Parameters tuning using Grid Search
+
+    #Preprocessing Stage 
+    grid_params = {'n_components' : list(range(5,10))}
+
+
+    # LDA model from scikitlearn
+    lda = LatentDirichletAllocation()
+    lda_model = GridSearchCV(lda,param_grid=grid_params)
+    lda_model.fit(document_term_matrix)
+    # Estimators for LDA model
+    lda_model1 = lda_model.best_estimator_
+    print("Best LDA model's params" , lda_model.best_params_)
+    print("Best log likelihood Score for the LDA model",lda_model.best_score_)
+    print("LDA model Perplexity on train data", lda_model1.perplexity(document_term_matrix))
+
+
+    #visualise result
+
 
 # open the txt file for analysis
 print('COGNIAI NLP DEMO')
@@ -267,20 +291,23 @@ print(castle.vector.shape)
 print(castle.vector)
 print('0. List Spacy Stop Words')
 spacystopwords(30)
-print('1. Text Summary')
-text_file = open("samples/crime.txt", "r")
-text = text_file.read()
-print(text)
-#print(mojo_text_summary(text, 10))
-print('2. Text Parsing : words, lemmas, entities')
+print('1. Text Summary using Word Frequency Measures')
+#text_file = open("samples/crime.txt", "r")
+#text = text_file.read()
 text = 'How about running a trip to Tokyo?  Dont be shy.  Or perhaps Kyoto or London. Nevertheless, challenges await you if you run it.  An the Financial Times will be interested.  Soon!'
 print(text)
+print(mojo_text_summary(text, 10))
+print('2. Text Parsing : words, lemmas, entities')
+#print(text)
 # print(mojo_text_parse(text))
 print('3. Binary Text Classification (Sentiment Analysis) using new spacy3 text_cat model + binary data import + quickstart config')
 # https://www.machinelearningplus.com/nlp/custom-text-classification-spacy/
 # text_classifier_s3()
 deployed_textcat("./output/model-best")
-print('4. Topic Modelling using spacy3 and scikitlearn ")
+print('4. Topic Modelling using spacy3 and scikitlearn')
+text=''
+print (text)
+topic_model(text)
 
 # - LDA "each document is made up of a distribution of topics and that each topic is in turn made up of a distribution of words.
 # The hidden or 'latent' layer - the topic layer" - what is it 'about'
