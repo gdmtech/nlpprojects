@@ -10,6 +10,7 @@
 # Depedencies
 # ml_datasets
 
+from wordcloud import WordCloud
 from ml_datasets import imdb
 import spacy
 # count frequency
@@ -280,7 +281,17 @@ def topic_model(text):
 
 
     #visualise result
-
+def wordcloud(papers):
+    # Import the wordcloud library
+    # Join the different processed titles together.
+    long_string = ','.join(list(papers['paper_text_processed'].values))
+    # Create a WordCloud object
+    wordcloud = WordCloud(background_color="white", max_words=5000,
+                        contour_width=3, contour_color='steelblue')
+    # Generate a word cloud
+    wordcloud.generate(long_string)
+    # Visualize the word cloud
+    wordcloud.to_image()
 
 # open the txt file for analysis
 print('COGNIAI NLP DEMO')
@@ -317,3 +328,10 @@ topic_model(text)
 
 
 print('5. Multi category Text Classification using spacy3 and gensim')
+
+print ('6. Text data visualiaton with Wordcloud')
+# papers[]
+# papers[0]='first docuemnt is great'
+#papers[1]='second document is ok'
+#import documents to papers
+#wordcloud(papers)
