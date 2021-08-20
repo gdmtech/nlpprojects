@@ -31,6 +31,20 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.decomposition import LatentDirichletAllocation
 from sklearn.manifold import TSNE
 
+
+#lets start learning ANOTHER NLP toolit (text focused)
+import nltk
+from nltk.corpus import stopwords
+from nltk.stem.wordnet import WordNetLemmatizer
+
+#we need GENSIM for topic modelling functions
+import gensim
+from gensim import corpora
+
+
+import string
+
+
 # endpoint TEXT SUMMARY
 # summarise using sentences with high frequency words (normalised)
 
@@ -262,25 +276,43 @@ def make_docs(data):
     # In practice take as much data as you can get.
     # you can always reduce it to make the   script even faster.
 
-def topic_model(text):
-    # Parameters tuning using Grid Search
+def topic_model():
+    #download the stopwords list in english from nltk
+    nltk.download('stopwords')
+    #setup test documents
+    doc1 = "Sugar is bad to consume. My sister likes to have sugar, but not my father."
+    doc2 = "My father spends a lot of time driving my sister around to dance practice."
+    doc3 = "Doctors suggest that driving may cause increased stress and blood pressure."
+    doc4 = "Sometimes I feel pressure to perform well at school, but my father never seems to drive my sister to do better."
+    doc5 = "Health experts say that Sugar is not good for your lifestyle."
 
-    #Preprocessing Stage 
-    grid_params = {'n_components' : list(range(5,10))}
+    # compile documents into one structure
+    doc_complete = [doc1, doc2, doc3, doc4, doc5]
+
+    # preprocess - remove all stop-words, puncuation 
+    #stop = set(stopwords.words('english'))
+    clean_text = []
+
+    #exclude = set(string.punctuation)
+    #lemma = WordNetLemmatizer()
+    
+    def clean(doc):
+        stop_free = " ".join([i for i in doc.lower().split() if i not in stop])
+        punc_free = ''.join(ch for ch in stop_free if ch not in exclude)
+        normalized = " ".join(lemma.lemmatize(word) for word in punc_free.split())
+        return normalized
+
+    doc_clean = [clean(doc).split() for doc in doc_complete]  
+    print(doc_clean)
+    # Creating the term dictionary of our courpus, where every unique term is assigned an index. 
+    dictionary = corpora.Dictionary(doc_clean)
+
+    # Converting list of documents (corpus) into Document Term Matrix using dictionary prepared above.
+    doc_term_matrix = [dictionary.doc2bow(doc) for doc in doc_clean]
+    print(doc_term_matrix)
+     
 
 
-    # LDA model from scikitlearn
-    lda = LatentDirichletAllocation()
-    lda_model = GridSearchCV(lda,param_grid=grid_params)
-    lda_model.fit(document_term_matrix)
-    # Estimators for LDA model
-    lda_model1 = lda_model.best_estimator_
-    print("Best LDA model's params" , lda_model.best_params_)
-    print("Best log likelihood Score for the LDA model",lda_model.best_score_)
-    print("LDA model Perplexity on train data", lda_model1.perplexity(document_term_matrix))
-
-
-    #visualise result
 def wordcloud(papers):
     # Import the wordcloud library
     # Join the different processed titles together.
@@ -307,18 +339,16 @@ print('1. Text Summary using Word Frequency Measures')
 #text = text_file.read()
 text = 'How about running a trip to Tokyo?  Dont be shy.  Or perhaps Kyoto or London. Nevertheless, challenges await you if you run it.  An the Financial Times will be interested.  Soon!'
 print(text)
-print(mojo_text_summary(text, 10))
+#print(mojo_text_summary(text, 10))
 print('2. Text Parsing : words, lemmas, entities')
 #print(text)
 # print(mojo_text_parse(text))
 print('3. Binary Text Classification (Sentiment Analysis) using new spacy3 text_cat model + binary data import + quickstart config')
 # https://www.machinelearningplus.com/nlp/custom-text-classification-spacy/
 # text_classifier_s3()
-deployed_textcat("./output/model-best")
+#deployed_textcat("./output/model-best")
 print('4. Topic Modelling using spacy3 and scikitlearn')
-text=''
-print (text)
-topic_model(text)
+topic_model()
 
 # - LDA "each document is made up of a distribution of topics and that each topic is in turn made up of a distribution of words.
 # The hidden or 'latent' layer - the topic layer" - what is it 'about'
@@ -330,8 +360,7 @@ topic_model(text)
 print('5. Multi category Text Classification using spacy3 and gensim')
 
 print ('6. Text data visualiaton with Wordcloud')
-# papers[]
-# papers[0]='first docuemnt is great'
-#papers[1]='second document is ok'
+
+#papers=['first docuemnt is great','second document is ok','second']
 #import documents to papers
 #wordcloud(papers)
