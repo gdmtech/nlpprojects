@@ -13,6 +13,11 @@
 from wordcloud import WordCloud
 from ml_datasets import imdb
 import spacy
+#import spefiic spacy components that we will use in a pipeline
+#from spacy.lemmatizer import Lemmatizer
+#I had the same issue. So it turns out spacy.lemmatizer is not available in spacy v3. You need to use spacy v2. lemmanizer is now a defualt component
+from spacy.lang.en.stop_words import STOP_WORDS
+
 # count frequency
 from collections import Counter
 # most commmon punctuation in English
@@ -40,7 +45,8 @@ from nltk.stem.wordnet import WordNetLemmatizer
 #we need GENSIM for topic modelling functions
 import gensim
 from gensim import corpora
-
+from gensim.utils import simple_preprocess
+from gensim.models import CoherenceModel
 
 import string
 
@@ -65,13 +71,15 @@ def mojo_text_summary(text, limit):
     pos_tag = ['PROPN', 'ADJ', 'NOUN', 'VERB']
     # create a doc (a list of tokens) from an nlp analysis of the text in lower case
     doc = nlp(text.lower())
-    # create a list of tokens from the
+    # create a list of tokens from the text but remove SOPTE WORDS
     for token in doc:  # 2
         if(token.text in nlp.Defaults.stop_words or token.text in punctuation):
             continue  # 3
         if(token.pos_ in pos_tag):
             keyword.append(token.text)
     print('keyword', keyword)
+
+
     # retur a list of count the number of occurances of each word
     freq_word = Counter(keyword)
     print('freq', freq_word)
@@ -111,6 +119,7 @@ def mojo_text_summary(text, limit):
 
 def mojo_text_parse(text):
 
+    # text output lists
     tokens = []
     words = []
     sents = []
@@ -139,13 +148,15 @@ def mojo_text_parse(text):
         sents.append(sent.text)
     print(sents)
 
-    print('remove stop words and classify text')
+    print('remove stop words and list lemmas - normally we will remove them')
     for word in doc:
         # is_stop is a spacy function
         if word.is_stop == False or word.pos_ != 'PUNCT':
             filtered.append(word)
             # word,pos_ classifies the Part Of Speech (POS) of the text, word.lemma_ lists the related workds
             print(word.text, word.pos_)
+            #lemma is generated during NLP analysis by the default pipeline component
+
             print(word.text, word.lemma_)
     print("Filtered Sentence:", filtered)
 
@@ -311,6 +322,31 @@ def topic_model():
     doc_term_matrix = [dictionary.doc2bow(doc) for doc in doc_clean]
     print(doc_term_matrix)
      
+def topic_model2():
+
+    #SETUP A NEW STOP WORD LIST THAT IS SPECIFIC TO THE CORPUS
+    # My list of stop words.
+    stop_list = ["Mrs.","Ms.","say","WASHINGTON","'s","Mr.",]
+
+    # Updates spaCy's default stop words list with my additional words. 
+    nlp.Defaults.stop_words.update(stop_list)
+
+    # Iterates over the words in the stop words list and resets the "is_stop" flag.
+    for word in STOP_WORDS:
+        lexeme = nlp.vocab[word]
+        lexeme.is_stop = True
+        print (word)
+        
+    def remove_stopwords(doc):
+        # This will remove stopwords and punctuation.
+        # Use token.text to return strings, which we'll need for Gensim.
+        doc = [token.text for token in doc if token.is_stop != True and token.is_punct != True]
+        return doc
+
+    # The add_pipe function appends our functions to the DEFAULT pipeline.
+    nlp.add_pipe(lemmatizer,name='lemmatizer',after='ner')
+    nlp.add_pipe(remove_stopwords, name="stopwords", last=True)
+
 
 
 def wordcloud(papers):
@@ -347,8 +383,8 @@ print('3. Binary Text Classification (Sentiment Analysis) using new spacy3 text_
 # https://www.machinelearningplus.com/nlp/custom-text-classification-spacy/
 # text_classifier_s3()
 #deployed_textcat("./output/model-best")
-print('4. Topic Modelling using spacy3 and scikitlearn')
-topic_model()
+print('4. Topic Modelling using spacy3 and gensim')
+topic_model2()
 
 # - LDA "each document is made up of a distribution of topics and that each topic is in turn made up of a distribution of words.
 # The hidden or 'latent' layer - the topic layer" - what is it 'about'
