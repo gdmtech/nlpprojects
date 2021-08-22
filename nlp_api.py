@@ -13,9 +13,9 @@
 from wordcloud import WordCloud
 from ml_datasets import imdb
 import spacy
-#import spefiic spacy components that we will use in a pipeline
+# import spefiic spacy components that we will use in a pipeline
 #from spacy.lemmatizer import Lemmatizer
-#I had the same issue. So it turns out spacy.lemmatizer is not available in spacy v3. You need to use spacy v2. lemmanizer is now a defualt component
+# I had the same issue. So it turns out spacy.lemmatizer is not available in spacy v3. You need to use spacy v2. lemmanizer is now a defualt component
 from spacy.lang.en.stop_words import STOP_WORDS
 
 # count frequency
@@ -37,12 +37,12 @@ from sklearn.decomposition import LatentDirichletAllocation
 from sklearn.manifold import TSNE
 
 
-#lets start learning ANOTHER NLP toolit (text focused)
+# lets start learning ANOTHER NLP toolit (text focused)
 import nltk
 from nltk.corpus import stopwords
 from nltk.stem.wordnet import WordNetLemmatizer
 
-#we need GENSIM for topic modelling functions
+# we need GENSIM for topic modelling functions
 import gensim
 from gensim import corpora
 from gensim.utils import simple_preprocess
@@ -78,7 +78,6 @@ def mojo_text_summary(text, limit):
         if(token.pos_ in pos_tag):
             keyword.append(token.text)
     print('keyword', keyword)
-
 
     # retur a list of count the number of occurances of each word
     freq_word = Counter(keyword)
@@ -155,7 +154,7 @@ def mojo_text_parse(text):
             filtered.append(word)
             # word,pos_ classifies the Part Of Speech (POS) of the text, word.lemma_ lists the related workds
             print(word.text, word.pos_)
-            #lemma is generated during NLP analysis by the default pipeline component
+            # lemma is generated during NLP analysis by the default pipeline component
 
             print(word.text, word.lemma_)
     print("Filtered Sentence:", filtered)
@@ -168,7 +167,7 @@ def mojo_text_parse(text):
     spacy.displacy.serve(doc, style="dep")
 
 
-def text_classifier():
+def text_classifier_s2():
 
     # textcat single label and multi-label
     # create and add the textcat pipeline with a CNN classifier acrchitecture
@@ -196,6 +195,8 @@ def text_classifier():
     # convert to a list for training
     train = reviews['tuples'].tolist()
     print(train[:10])
+    # the remaing code only works for spacy2
+    # us this code as an exampe of how to manipulate text data
 
 
 def spacystopwords(limit):
@@ -231,6 +232,11 @@ def text_classifier_s3():
     doc_bin = DocBin(docs=valid_docs)
     doc_bin.to_disk("./data/valid.spacy")
     # the files are now ready to be used in Spacy traing
+    # the next stage is carried out by spacy 3 CLI
+    # 1. Setup the config file for text cat
+    # 2. Add the valid.spacy and train.spacy pathe
+    # 3. train
+    # 4. Depoy the model using nlp = spacy.load(model_file)
 
 
 def deployed_textcat(model_file):
@@ -241,6 +247,7 @@ def deployed_textcat(model_file):
     # predict the sentiment until someone writes quit
     while text != "quit":
         text = input("Please enter example input: ")
+        # use model to annotate the text; the pipeline contains text_cat (which is now trained)
         doc = nlp(text)
         if doc.cats['positive'] > .5:
             print("the sentiment is positive")
@@ -278,7 +285,7 @@ def make_docs(data):
         else:
             doc.cats["positive"] = 0
             doc.cats["negative"] = 1
-        # put them into a nice list
+        # put them into a nice doc list
         docs.append(doc)
     return docs
 
@@ -287,10 +294,11 @@ def make_docs(data):
     # In practice take as much data as you can get.
     # you can always reduce it to make the   script even faster.
 
+
 def topic_model():
-    #download the stopwords list in english from nltk
+    # download the stopwords list in english from nltk
     nltk.download('stopwords')
-    #setup test documents
+    # setup test documents
     doc1 = "Sugar is bad to consume. My sister likes to have sugar, but not my father."
     doc2 = "My father spends a lot of time driving my sister around to dance practice."
     doc3 = "Doctors suggest that driving may cause increased stress and blood pressure."
@@ -300,53 +308,55 @@ def topic_model():
     # compile documents into one structure
     doc_complete = [doc1, doc2, doc3, doc4, doc5]
 
-    # preprocess - remove all stop-words, puncuation 
+    # preprocess - remove all stop-words, puncuation
     #stop = set(stopwords.words('english'))
     clean_text = []
 
     #exclude = set(string.punctuation)
     #lemma = WordNetLemmatizer()
-    
+
     def clean(doc):
         stop_free = " ".join([i for i in doc.lower().split() if i not in stop])
         punc_free = ''.join(ch for ch in stop_free if ch not in exclude)
-        normalized = " ".join(lemma.lemmatize(word) for word in punc_free.split())
+        normalized = " ".join(lemma.lemmatize(word)
+                              for word in punc_free.split())
         return normalized
 
-    doc_clean = [clean(doc).split() for doc in doc_complete]  
+    doc_clean = [clean(doc).split() for doc in doc_complete]
     print(doc_clean)
-    # Creating the term dictionary of our courpus, where every unique term is assigned an index. 
+    # Creating the term dictionary of our courpus, where every unique term is assigned an index.
     dictionary = corpora.Dictionary(doc_clean)
 
     # Converting list of documents (corpus) into Document Term Matrix using dictionary prepared above.
     doc_term_matrix = [dictionary.doc2bow(doc) for doc in doc_clean]
     print(doc_term_matrix)
-     
+
+
 def topic_model2():
 
-    #SETUP A NEW STOP WORD LIST THAT IS SPECIFIC TO THE CORPUS
+    # SETUP A NEW STOP WORD LIST THAT IS SPECIFIC TO THE CORPUS
     # My list of stop words.
-    stop_list = ["Mrs.","Ms.","say","WASHINGTON","'s","Mr.",]
+    stop_list = ["Mrs.", "Ms.", "say", "WASHINGTON", "'s", "Mr.", ]
 
-    # Updates spaCy's default stop words list with my additional words. 
+    # Updates spaCy's default stop words list with my additional words.
     nlp.Defaults.stop_words.update(stop_list)
 
     # Iterates over the words in the stop words list and resets the "is_stop" flag.
     for word in STOP_WORDS:
         lexeme = nlp.vocab[word]
         lexeme.is_stop = True
-        print (word)
-        
+        print(word)
+
     def remove_stopwords(doc):
         # This will remove stopwords and punctuation.
         # Use token.text to return strings, which we'll need for Gensim.
-        doc = [token.text for token in doc if token.is_stop != True and token.is_punct != True]
+        doc = [token.text for token in doc if token.is_stop !=
+               True and token.is_punct != True]
         return doc
 
     # The add_pipe function appends our functions to the DEFAULT pipeline.
-    nlp.add_pipe(lemmatizer,name='lemmatizer',after='ner')
+    nlp.add_pipe(lemmatizer, name='lemmatizer', after='ner')
     nlp.add_pipe(remove_stopwords, name="stopwords", last=True)
-
 
 
 def wordcloud(papers):
@@ -355,11 +365,12 @@ def wordcloud(papers):
     long_string = ','.join(list(papers['paper_text_processed'].values))
     # Create a WordCloud object
     wordcloud = WordCloud(background_color="white", max_words=5000,
-                        contour_width=3, contour_color='steelblue')
+                          contour_width=3, contour_color='steelblue')
     # Generate a word cloud
     wordcloud.generate(long_string)
     # Visualize the word cloud
     wordcloud.to_image()
+
 
 # open the txt file for analysis
 print('COGNIAI NLP DEMO')
@@ -377,12 +388,12 @@ text = 'How about running a trip to Tokyo?  Dont be shy.  Or perhaps Kyoto or Lo
 print(text)
 #print(mojo_text_summary(text, 10))
 print('2. Text Parsing : words, lemmas, entities')
-#print(text)
+# print(text)
 # print(mojo_text_parse(text))
 print('3. Binary Text Classification (Sentiment Analysis) using new spacy3 text_cat model + binary data import + quickstart config')
 # https://www.machinelearningplus.com/nlp/custom-text-classification-spacy/
 # text_classifier_s3()
-#deployed_textcat("./output/model-best")
+# deployed_textcat("./output/model-best")
 print('4. Topic Modelling using spacy3 and gensim')
 topic_model2()
 
@@ -395,8 +406,8 @@ topic_model2()
 
 print('5. Multi category Text Classification using spacy3 and gensim')
 
-print ('6. Text data visualiaton with Wordcloud')
+print('6. Text data visualiaton with Wordcloud')
 
 #papers=['first docuemnt is great','second document is ok','second']
-#import documents to papers
-#wordcloud(papers)
+# import documents to papers
+# wordcloud(papers)
