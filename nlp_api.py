@@ -240,7 +240,7 @@ def text_classifier_s3():
 
 
 def deployed_textcat(model_file):
-    # load thebest model from training
+    # load the best model from training
     nlp = spacy.load(model_file)
     text = ""
     print("type : ‘quit’ to exit")
